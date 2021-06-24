@@ -1,4 +1,4 @@
- import {takeEvery, call, fork, put, takeLatest} from 'redux-saga/effects';
+ import {takeEvery, call, fork, put, takeLatest, take} from 'redux-saga/effects';
  import * as actions from '../actions/users';
  import * as api from '../api/users';
 
@@ -6,12 +6,14 @@ function* getUsers() {
   //  console.log("AFTER CREATEUSER WORKER")
     try {
         const result = yield call(api.getUsers);
-   //     console.log(result);
+        console.log(result);
         yield put(actions.getUsersSuccess({
             items: result.data.data
         }))
-    } catch(error) {
-        console.log(error);
+    } catch(e) {
+        yield put(actions.usersError({
+            error: 'an error occured while trying to get the users.'
+        }))
     }
 }
 
@@ -20,13 +22,14 @@ function* getUsers() {
  }
 
  function* createUser(action) {
-  //  console.log("[INSIDE CREATEUSER] ", action);
+    console.log("[INSIDE CREATEUSER] ", action);
     try {
-       let res = yield call(api.createUser, {firstName: action.payload.firstName, lastName: action.payload.lastName});
-       console.log(res);
+        yield call(api.createUser, {firstName: action.payload.firstName, lastName: action.payload.lastName});
         yield call(getUsers);
     } catch(e) {
-        console.log(e);
+        yield put(actions.usersError({
+            error: 'an error occured while trying to create the user.'
+        }))
     }
  }
 
@@ -35,10 +38,14 @@ function* getUsers() {
  }
 
  function* deleteUser(action) {
-     console.log(action);
-     const res = yield call(api.deleteUser, action.payload.userId);
- //    console.log(res);
-     yield call(getUsers)
+     try {
+        const res = yield call(api.deleteUser, action.payload.userId);
+        yield call(getUsers)
+     } catch(e) {
+        yield put(actions.usersError({
+            error: 'an error occured while trying to delete the user.'
+        }))
+     }
  }
 
  function* watchDeleteUserRequest() {

@@ -10,7 +10,7 @@ export const getUsers = () => {
 
 export const createUser  = ({firstName, lastName}) => {
     console.log("[API > USERS] ", firstName, lastName)
-    return axios.post('/users', {
+    return axios.post('http://jsonkeeper.com/b/K3BR', {
         firstName, 
         lastName
     })
